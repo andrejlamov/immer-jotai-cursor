@@ -143,36 +143,33 @@ const ListItem = memo(({listId, data}) => {
   const hovered =  st.useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
 
   return <div className={css.listItem}
-    onMouseEnter={() => st.update(state, draft => {
-      _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
-    })}
-    onMouseLeave={() => st.update(state, draft => {
-      _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
-    })}
-  >
+              onMouseEnter={() => st.update(state, draft => {
+                _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
+              })}
+              onMouseLeave={() => st.update(state, draft => {
+                _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
+              })}>
 
-    {hovered && <button className={classNames(css.delete)}
-      onClick={() => st.update(state, draft => {
-        _.unset(draft.id2list?.[listId]?.id2item, [id])
-      })}>delete</button>}
-    <input className={css.titleInput}
+           {hovered && <button className={classNames(css.delete)}
+                               onClick={() => st.update(state, draft => {
+                                 _.unset(draft.id2list?.[listId]?.id2item, [id])
+                               })}>delete</button>}
+           <input className={css.titleInput}
 
-      value={title}
-      onChange={(e) => {
-        st.update(state, draft => {
-          draft.id2list[listId].id2item[data.id].title = e.target.value
-        })
-      }}
-
-    />
-    <textarea
-      onChange={(e) => {
-        st.update(state, draft => {
-          draft.id2list[listId].id2item[data.id].description = e.target.value
-        })
-      }}
-      value={description}/>
-  </div>
+                  value={title}
+                  onChange={(e) => {
+                    st.update(state, draft => {
+                      draft.id2list[listId].id2item[data.id].title = e.target.value
+                    })
+                  }}/>
+           <textarea
+             onChange={(e) => {
+               st.update(state, draft => {
+                 draft.id2list[listId].id2item[data.id].description = e.target.value
+               })
+             }}
+             value={description}/>
+         </div>
 })
 
 const Tabs = memo(() => {
