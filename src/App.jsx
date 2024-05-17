@@ -1,12 +1,11 @@
 import {memo, useMemo, useRef, useEffect} from "react"
 import _ from "lodash"
-import * as st from "@src/state"
+import * as st from "@src/state-lib"
 import css from "@src/App.module.scss"
 import '@picocss/pico'
 import '../node_modules/@ibm/plex/scss/ibm-plex.scss'
 import classNames from 'classnames'
 import { Provider } from "jotai"
-import { useCursor } from "./state"
 import { v4 as uuidv4 } from 'uuid'
 
 const state = st.once(() => st.initAtom({
@@ -126,7 +125,7 @@ const ListItem = memo(({listId, data}) => {
     console.log("*** render <ListItem/>")
   })
 
-  const hovered = useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
+  const hovered =  st.useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
 
   return <div className={css.listItem}
     onMouseEnter={() => st.update(state, draft => {
@@ -186,7 +185,7 @@ const Tabs = memo(() => {
 
 const Stats = memo(() => {
   useEffect(() => console.log("*** render <Stast/>"))
-  const _statistics = useCursor(state, data => data?._statistics)
+  const _statistics = st.useCursor(state, data => data?._statistics)
   return <div>
     <div>Total number of list items: {_statistics?.nrOfItems}</div>
     <div></div>
