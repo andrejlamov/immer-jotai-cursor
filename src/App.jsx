@@ -7,6 +7,21 @@ import '../node_modules/@ibm/plex/scss/ibm-plex.scss'
 import classNames from 'classnames'
 import { Provider } from "jotai"
 import { v4 as uuidv4 } from 'uuid'
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+  BrowserRouter
+} from "react-router-dom"
+
+const extractUrl = () => {
+  return {
+    path: location.pathname?.split("/").filter(d => d !== ""),
+    params: Object.fromEntries(new URLSearchParams(location.search).entries())
+  }
+}
 
 const state = st.once(() => st.initAtom({
   tabs: [
@@ -45,6 +60,7 @@ const state = st.once(() => st.initAtom({
       },
     }
   },
+  _url: null,
   _statistics: null, // place for watcher calculated data
   __ephemeral: {} // place for dom/react ephemeral states like hovered, disabled etc
 }))
@@ -64,7 +80,6 @@ st.addWatcher({
   },
   initialRun: true
 })
-
 
 const Controls = memo(() => {
   useEffect(() => console.log("*** render <Controls/>"))
@@ -200,17 +215,32 @@ const StateJson = memo(() => {
   </div>
 })
 
-export const App = () => {
+const Root = memo(() => {
+  return <div>
+             <Tabs/>
+             <Controls/>
+             <div className={css.mainPane}>
+               <List/>
+               <StateJson/>
+             </div>
+             <Stats/>
+           </div>
+})
+
+export const App = memo(() => {
   useEffect(() => {console.log("*** render <App/>")})
+  const location = useLocation
+  useEffect(() => {
+    st.update(state, (draft) => {
+      draft._url = extractUrl()
+    })
+  }, [location])
+
   return <Provider store={st.store}>
-    <div>
-      <Tabs/>
-      <Controls/>
-      <div className={css.mainPane}>
-        <List/>
-        <StateJson/>
-      </div>
-      <Stats/>
-    </div>
-  </Provider>
-}
+           <BrowserRouter>
+             <Routes>
+               <Route path="*" element={<Root/>} />
+             </Routes>
+           </BrowserRouter>
+         </Provider>
+})
