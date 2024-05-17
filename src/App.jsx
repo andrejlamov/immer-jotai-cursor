@@ -60,9 +60,11 @@ const state = st.once(() => st.initAtom({
       },
     }
   },
+  // one underscore: caluclated from watchers or url change
   _url: null,
-  _statistics: null, // place for watcher calculated data
-  __ephemeral: {} // place for dom/react ephemeral states like hovered, disabled etc
+  _statistics: null,
+  // two underscores: dom/react ephemeral states like hovered, disabled etc
+  __ephemeral: {}
 }))
 
 st.addWatcher({
