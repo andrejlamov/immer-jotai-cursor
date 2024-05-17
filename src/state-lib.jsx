@@ -14,7 +14,7 @@ export const initAtom = (state) => {
   return a
 }
 
-export const addWatcher = ({state, name, predicate, fn, initialRun}) => {
+export const addWatcher = (state, {name, predicate, fn, initialRun}) => {
   _.set(atomId2watchers, [`${state}`, name], {predicate, fn})
   if(initialRun) {
     update(state, (draft) => {

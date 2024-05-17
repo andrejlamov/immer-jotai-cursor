@@ -67,9 +67,8 @@ const state = st.once(() => st.initAtom({
   __ephemeral: {}
 }))
 
-st.addWatcher({
+st.addWatcher(state, {
   name: "list statistics",
-  state: state,
   predicate: (before, after) => before.id2list !== after.id2list,
   fn: (data) => {
     const nrOfItems = _.chain(data.id2list)
