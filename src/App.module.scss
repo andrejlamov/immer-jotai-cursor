@@ -1,0 +1,87 @@
+.tabs {
+    display: flex;
+    gap: 5px;
+    background: lightgray;
+    padding-top: 5px;
+    padding-left: 5px;
+    .tab {
+	cursor: pointer;
+	border: 1px solid grey;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-radius: 5px 5px 0px 0px;
+	border-bottom: none;
+    }
+    .inactive {
+	border: none;
+    }
+    .active {
+	background: white;
+
+    }
+ }
+
+.list {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.listItem {
+    position: relative;
+    border: 1px solid grey;
+    padding: 5px;
+    width: 400px;
+    min-width: 400px;
+    input,textarea {
+	border-style: none; 
+	border-color: non
+    }
+    button {
+    padding: 0px;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-size: 12px;
+    border-radius: 2px;
+    width: fit-content;
+    }
+    button.delete {
+	position:absolute;
+	right: 5px;
+	top: 3px;
+	background: darkred;
+    } 
+}
+
+
+.mainPane {
+    width: 100%;
+    display: flex;
+    * {
+	width: 100%
+    }
+}
+
+
+.jsonState {
+    pre {
+	background: white;
+	font-size: 12px;
+	}
+}
+
+.controls {
+    display:flex;
+    gap: 5px;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    button {
+	padding: 0px;
+	padding-left: 2px;
+	padding-right: 2px;
+	font-size: 12px;
+	border-radius: 2px;
+    }
+}

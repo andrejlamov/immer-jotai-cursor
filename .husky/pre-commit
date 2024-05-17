@@ -1,0 +1,9 @@
+#!/bin/bash
+set -xeuo pipefail
+unset GIT_LITERAL_PATHSPECS
+STAGED=$(git diff --name-only --cached ./*{js,jsx} |   xargs)
+[ -z "$STAGED" ] && exit 0
+npx eslint $STAGED --fix
+git add $STAGED
+
+
