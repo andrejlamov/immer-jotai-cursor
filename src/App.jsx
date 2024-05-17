@@ -46,8 +46,8 @@ const state = st.once(() => st.initAtom({
       },
     }
   },
-  _statistics: null,
-  __ephemeral: {}
+  _statistics: null, // place for watcher calculated data
+  __ephemeral: {} // place for dom/react ephemeral states like hovered, disabled etc
 }))
 
 st.addWatcher({
