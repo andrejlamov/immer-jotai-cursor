@@ -19,30 +19,30 @@ const state = st.once(() => st.initAtom({
       id: "id4",
       title: "another example",
       id2item: {
-	"id5": {
+        "id5": {
           id: "id5",
-	  order:0,
-	  title: "do something",
-	  description: "..."
-	}
+          order:0,
+          title: "do something",
+          description: "..."
+        }
       }
     },
     "id1": {
       id: "id1",
       title: "example list",
       id2item: {
-	"id2": {
+        "id2": {
           id: "id2",
-	  order:1,
-	  title: "make a react app",
-	  description: "use immer and jotai and something more"
-	},
-	"id3": {
+          order:1,
+          title: "make a react app",
+          description: "use immer and jotai and something more"
+        },
+        "id3": {
           id: "id3",
-	  order:0,
-	  title: "find pitfalls in these patterns",
-	  description: "..."
-	}
+          order:0,
+          title: "find pitfalls in these patterns",
+          description: "..."
+        }
       },
     }
   },
@@ -51,48 +51,49 @@ const state = st.once(() => st.initAtom({
 }))
 
 st.addWatcher({
-  name: "list statistics", 
+  name: "list statistics",
   state: state,
   predicate: (before, after) => before.id2list !== after.id2list,
   fn: (data) => {
     const nrOfItems = _.chain(data.id2list)
-          .values()
-          .map(d => _.values(d.id2item)?.length)
-          .flattenDeep()
-          .sum()
-          .value()
+      .values()
+      .map(d => _.values(d.id2item)?.length)
+      .flattenDeep()
+      .sum()
+      .value()
     _.set(data, ["_statistics", "nrOfItems"], nrOfItems)
   },
   initialRun: true
 })
-            
+
 
 const Controls = memo(() => {
+  useEffect(() => console.log("*** render <Controls/>"))
   return <div className={css.controls}>
-           <button onClick={() => {
-             st.update(state, draft => {
-               const id = uuidv4()
-               draft.id2list[id] = {
-                 id: id,
-                 title: "new list",
-               }
-               draft.tabs.forEach(d => {d.active = false})
-               draft.tabs.push(
-                 {listId: id, active: true}
-               )
-             })
-           }}>new list</button>
-           <button onClick={() => {
-             st.update(state, draft => {
-               const listId = draft.tabs.find(d => d.active)?.listId
-               if(listId) {
-                 const id = uuidv4()
-                 draft.id2list[listId].id2item[id] = {
-                   id: id,
-                 }
-               }
-             })
-           }}>new item</button>
+    <button onClick={() => {
+      st.update(state, draft => {
+        const id = uuidv4()
+        draft.id2list[id] = {
+          id: id,
+          title: "new list",
+        }
+        draft.tabs.forEach(d => {d.active = false})
+        draft.tabs.push(
+          {listId: id, active: true}
+        )
+      })
+    }}>new list</button>
+    <button onClick={() => {
+      st.update(state, draft => {
+        const listId = draft.tabs.find(d => d.active)?.listId
+        if(listId) {
+          const id = uuidv4()
+          draft.id2list[listId].id2item[id] = {
+            id: id,
+          }
+        }
+      })
+    }}>new item</button>
   </div>
 })
 
@@ -106,17 +107,15 @@ const List = memo(() => {
     return data?.id2list?.[listId]
   })
   const items = _.chain(activeList?.id2item || {})
-        .values()
-        .sortBy('order')
-        .value()
-  
-  return <div className={css.list}>
-           {items.map((d,i) => {
-             return <ListItem key={`list-item-${i}`} listId={activeList?.id} data={d}/>
-           })}
-         </div>
-  
+    .values()
+    .sortBy('order')
+    .value()
 
+  return <div className={css.list}>
+    {items.map((d,i) => {
+      return <ListItem key={`list-item-${i}`} listId={activeList?.id} data={d}/>
+    })}
+  </div>
 })
 
 const ListItem = memo(({listId, data}) => {
@@ -124,40 +123,40 @@ const ListItem = memo(({listId, data}) => {
   useEffect(() => {
     console.log("*** render <ListItem/>")
   })
-  
+
   const hovered = useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
 
   return <div className={css.listItem}
-              onMouseEnter={() => st.update(state, draft => {
-                _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
-              })}
-              onMouseLeave={() => st.update(state, draft => {
-                _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
-              })}
-         >
-           
-           {hovered && <button className={classNames(css.delete)}
-                               onClick={() => st.update(state, draft => {
-                                 _.unset(draft.id2list?.[listId]?.id2item, [id])
-                               })}>delete</button>}
-           <input className={css.titleInput}
+    onMouseEnter={() => st.update(state, draft => {
+      _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
+    })}
+    onMouseLeave={() => st.update(state, draft => {
+      _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
+    })}
+  >
 
-                  value={title}
-                  onChange={(e) => {
-                    st.update(state, draft => {
-                      draft.id2list[listId].id2item[data.id].title = e.target.value
-                    })
-                  }}
+    {hovered && <button className={classNames(css.delete)}
+      onClick={() => st.update(state, draft => {
+        _.unset(draft.id2list?.[listId]?.id2item, [id])
+      })}>delete</button>}
+    <input className={css.titleInput}
 
-           />
-           <textarea
-             onChange={(e) => {
-                    st.update(state, draft => {
-                      draft.id2list[listId].id2item[data.id].description = e.target.value
-                    })
-             }}
-             value={description}/>
-         </div>
+      value={title}
+      onChange={(e) => {
+        st.update(state, draft => {
+          draft.id2list[listId].id2item[data.id].title = e.target.value
+        })
+      }}
+
+    />
+    <textarea
+      onChange={(e) => {
+        st.update(state, draft => {
+          draft.id2list[listId].id2item[data.id].description = e.target.value
+        })
+      }}
+      value={description}/>
+  </div>
 })
 
 const Tabs = memo(() => {
@@ -168,47 +167,49 @@ const Tabs = memo(() => {
   })
 
   return <div className={css.tabs}>
-           {tabs?.map((d,i) => {
-             return <div key={`tab-${i}`}
-                         className={classNames(css.tab, d.active ?  css.active : css.inactive)}
-                         onClick={() => st.update(state, data => {
-                           data?.tabs?.forEach(t => {
-                             t.active = false
-                           })
-                           data.tabs[i].active = true
-                         })}
-                    >{id2list?.[d?.listId]?.title}</div>
-           })}
-         </div>
+    {tabs?.map((d,i) => {
+      return <div key={`tab-${i}`}
+        className={classNames(css.tab, d.active ?  css.active : css.inactive)}
+        onClick={() => st.update(state, data => {
+          data?.tabs?.forEach(t => {
+            t.active = false
+          })
+          data.tabs[i].active = true
+        })}
+      >{id2list?.[d?.listId]?.title}</div>
+    })}
+  </div>
 })
 
 
 const Stats = memo(() => {
+  useEffect(() => console.log("*** render <Stast/>"))
   const _statistics = useCursor(state, data => data?._statistics)
   return <div>
-           <div>Total number of list items: {_statistics?.nrOfItems}</div>
-           <div></div>
-         </div>
-}) 
+    <div>Total number of list items: {_statistics?.nrOfItems}</div>
+    <div></div>
+  </div>
+})
 
 const StateJson = memo(() => {
+  useEffect(() => console.log("*** render <StateJson/>"))
   const data = st.useCursor(state, data => data)
   return <div className={css.jsonState}>
-           <pre>{JSON.stringify(data, null, 2)}</pre>
-         </div>
-}) 
+    <pre>{JSON.stringify(data, null, 2)}</pre>
+  </div>
+})
+
 export const App = () => {
   useEffect(() => {console.log("*** render <App/>")})
   return <Provider store={st.store}>
-           <div>
-             <Tabs/>
-             <Controls/>
-             <div className={css.mainPane}>
-               <List/>
-
-               <StateJson/>
-             </div>
-             <Stats/>
-           </div>
-         </Provider>
+    <div>
+      <Tabs/>
+      <Controls/>
+      <div className={css.mainPane}>
+        <List/>
+        <StateJson/>
+      </div>
+      <Stats/>
+    </div>
+  </Provider>
 }

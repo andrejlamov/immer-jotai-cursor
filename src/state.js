@@ -34,10 +34,10 @@ export const update = (state, fn, opts) => {
     const watchers = _.values(atomId2watchers?.[`${state}`] ?? {})
     const res = produce(after, draft => {
       watchers.forEach(({predicate, fn}) => {
-	if(_.isNil(predicate) || predicate(before, after)) {
+        if(_.isNil(predicate) || predicate(before, after)) {
 	  console.log("*** applying", fn)
 	  fn(draft)
-	}
+        }
       })
     })    
 
@@ -60,13 +60,13 @@ export const read = (state, getFn) => {
 }
 
 export const once = (() => {
-  let initialized = false;
-  let value;
+  let initialized = false
+  let value
   return (initFn) => {
     if (!initialized) {
-      value = initFn();
-      initialized = true;
+      value = initFn()
+      initialized = true
     }
-    return value;
-  };
-})();
+    return value
+  }
+})()
