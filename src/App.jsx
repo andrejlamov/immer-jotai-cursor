@@ -156,20 +156,15 @@ const ListItem = memo(({listId, data}) => {
                                  _.unset(draft.id2list?.[listId]?.id2item, [id])
                                })}>delete</button>}
            <input className={css.titleInput}
-
                   value={title}
                   onChange={(e) => {
                     st.update(state, draft => {
-                      draft.id2list[listId].id2item[data.id].title = e.target.value
+                      _.set(draft, ["id2list", listId, "id2item",data.id,"title"], e.target.value)
                     })
                   }}/>
-           <textarea
-             onChange={(e) => {
-               st.update(state, draft => {
-                 draft.id2list[listId].id2item[data.id].description = e.target.value
-               })
-             }}
-             value={description}/>
+           <textarea onChange={(e) => st.update(state, draft => {
+             _.set(draft, ["id2list", listId, "id2item",data.id,"description"], e.target.value)
+           })} value={description}/>
          </div>
 })
 
