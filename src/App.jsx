@@ -139,7 +139,7 @@ const List = memo(() => {
 const ListItem = memo(({listId, data}) => {
   const {id, title, description} = data
   useEffect(() => {
-    console.log("*** render <ListItem/>")
+    console.log(`*** render <ListItem/> id=${id} listId=${listId}`)
   })
 
   const hovered =  st.useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
