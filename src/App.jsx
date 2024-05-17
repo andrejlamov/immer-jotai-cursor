@@ -90,6 +90,7 @@ const Controls = memo(() => {
           const id = uuidv4()
           draft.id2list[listId].id2item[id] = {
             id: id,
+            order: _.chain(draft.id2list[listId].id2item).map(d => d?.order).max().value() + 1
           }
         }
       })
@@ -107,13 +108,14 @@ const List = memo(() => {
     return data?.id2list?.[listId]
   })
   const items = _.chain(activeList?.id2item || {})
-    .values()
-    .sortBy('order')
-    .value()
+        .values()
+        .sortBy('order')
+        .reverse()
+        .value()
 
   return <div className={css.list}>
     {items.map((d,i) => {
-      return <ListItem key={`list-item-${i}`} listId={activeList?.id} data={d}/>
+      return <ListItem key={`list-item-${d.id}`} listId={activeList?.id} data={d}/>
     })}
   </div>
 })
