@@ -12,20 +12,19 @@ import {
   Route,
   useLocation,
   useNavigate,
-  useSearchParams,
   BrowserRouter
 } from "react-router-dom"
 
-const extractUrl = () => {
+const extractUrl = (location) => {
   return {
-    path: location.pathname?.split("/").filter(d => d !== ""),
-    params: Object.fromEntries(new URLSearchParams(location.search).entries())
+    path: location?.pathname?.split("/")?.filter(d => d !== "") || [],
+    params: Object.fromEntries(new URLSearchParams(location?.search || "").entries()) || {}
   }
 }
 
 const state = st.once(() => st.initAtom({
   tabs: [
-    {listId: "id1", active: true},
+    {listId: "id1"},
     {listId: "id4"}
   ],
   id2list: {
@@ -60,24 +59,28 @@ const state = st.once(() => st.initAtom({
       },
     }
   },
-  // one underscore: caluclated from watchers or url change
-  _url: null,
+  url: null,
   _statistics: null,
   // two underscores: dom/react ephemeral states like hovered, disabled etc
   __ephemeral: {}
 }))
 
+
+
 st.addWatcher(state, {
-  name: "list statistics",
-  predicate: (before, after) => before.id2list !== after.id2list,
-  fn: (data) => {
-    const nrOfItems = _.chain(data.id2list)
-      .values()
-      .map(d => _.values(d.id2item)?.length)
-      .flattenDeep()
-      .sum()
-      .value()
-    _.set(data, ["_statistics", "nrOfItems"], nrOfItems)
+  name: "act on url change",
+  predicate: (before, after) => before.url != after.url,
+  fn: (draft) => {
+    const [p0,p1] = draft?.url?.path ?? []
+    if(p0 === "list" && p1) {
+      draft.tabs.forEach(t => {
+        t.active = t.listId === p1
+      })
+    } else {
+      draft.tabs.forEach(t => {
+        t.active = false
+      })
+    }
   },
   initialRun: true
 })
@@ -96,6 +99,9 @@ const Controls = memo(() => {
         draft.tabs.push(
           {listId: id, active: true}
         )
+        draft.url = {
+          path: ["list", id], params: {}
+        }
       })
     }}>new list</button>
     <button onClick={() => {
@@ -103,10 +109,10 @@ const Controls = memo(() => {
         const listId = draft.tabs.find(d => d.active)?.listId
         if(listId) {
           const id = uuidv4()
-          draft.id2list[listId].id2item[id] = {
+          _.set(draft.id2list[listId], ["id2item", id], {
             id: id,
-            order: _.chain(draft.id2list[listId].id2item).map(d => d?.order).max().value() + 1
-          }
+            order: (_.chain(draft.id2list[listId].id2item).map(d => d?.order).max().value() ?? 0) + 1
+          })
         }
       })
     }}>new item</button>
@@ -181,10 +187,11 @@ const Tabs = memo(() => {
     {tabs?.map((d,i) => {
       return <div key={`tab-${i}`}
         className={classNames(css.tab, d.active ?  css.active : css.inactive)}
-        onClick={() => st.update(state, data => {
-          data?.tabs?.forEach((t,j) => {
+        onClick={() => st.update(state, draft => {
+          draft?.tabs?.forEach((t,j) => {
             t.active = i === j
           })
+          draft.url = {params: {}, path: ["list", draft?.tabs?.[i]?.listId]}
         })}
       >{id2list?.[d?.listId]?.title}</div>
     })}
@@ -209,32 +216,69 @@ const StateJson = memo(() => {
   </div>
 })
 
+
+const useUrlStateSync = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const url = st.useCursor(state, data => data.url)
+  // url -> state
+  useEffect(() => {
+
+    const urlBefore = st.read(state, data=> data.url)
+    const urlAfter = extractUrl(location)
+
+    if(!_.isEqual(urlAfter, urlBefore)) {
+      st.update(state, (draft) => {
+        draft.url = urlAfter
+      })
+    }
+
+  }, [location])
+
+  // state -> url
+  useEffect(() => {
+    const urlBefore = extractUrl(location)
+    const urlAfter = st.read(state, data=> data.url)
+    if(!_.isEqual(urlAfter, urlBefore)) {
+      const pathname = urlAfter?.path?.join("/")
+      const search = new URLSearchParams(urlAfter?.params)
+      const dest = `${pathname ?? ""}${search ?? ""}`
+      navigate(dest)
+    }
+  }, [url])
+
+  return
+}
+
+
 const Root = memo(() => {
-  return <div>
-    <Tabs/>
-    <Controls/>
-    <div className={css.mainPane}>
-      <List/>
-      <StateJson/>
-    </div>
-    <Stats/>
-  </div>
+  useEffect(() => {console.log("*** render <Root/>")})
+
+  useUrlStateSync()
+
+  return <Routes>
+           <Route path="*" element={
+             <div>
+               <Tabs/>
+               <Controls/>
+               <div className={css.mainPane}>
+                 <List/>
+                 <StateJson/>
+               </div>
+               <Stats/>
+             </div>
+           } />
+         </Routes>
+
+
+
 })
 
 export const App = memo(() => {
-  useEffect(() => {console.log("*** render <App/>")})
-  const location = useLocation
-  useEffect(() => {
-    st.update(state, (draft) => {
-      draft._url = extractUrl()
-    })
-  }, [location])
-
   return <Provider store={st.store}>
     <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<Root/>} />
-      </Routes>
+      <Root/>
     </BrowserRouter>
   </Provider>
 })
