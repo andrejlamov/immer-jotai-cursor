@@ -1,8 +1,9 @@
 import {selectAtom, atomWithDefault, useAtomCallback} from "jotai/utils"
 import {atom, createStore, useAtomValue, useSetAtom} from "jotai"
-import {useMemo} from "react"
+import {useMemo, useEffect} from "react"
 import {produce} from "immer"
 import _ from "lodash"
+import {useLocation, useNavigate} from "react-router-dom"
 
 export const store = createStore()
 
@@ -70,3 +71,46 @@ export const once = (() => {
     return value
   }
 })()
+
+
+
+const extractUrl = (location) => {
+  return {
+    path: location?.pathname?.split("/")?.filter(d => d !== "") || [],
+    params: Object.fromEntries(new URLSearchParams(location?.search || "").entries()) || {}
+  }
+}
+
+export const useUrlStateSync = (state, {cursorFn, updateFn}) => {
+
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const url = useCursor(state, cursorFn)
+
+  // url -> state
+  useEffect(() => {
+    const urlBefore = read(state, cursorFn)
+    const urlAfter = extractUrl(location)
+
+    if(!_.isEqual(urlAfter, urlBefore)) {
+      updateFn()
+    }
+  }, [location])
+
+  // state -> url
+  useEffect(() => {
+    const urlBefore = extractUrl(location)
+    const urlAfter = read(state, cursorFn)
+
+    if(!_.isEqual(urlAfter, urlBefore)) {
+      const pathname = urlAfter?.path?.join("/")
+      const search = new URLSearchParams(urlAfter?.params)
+      const dest = `${pathname ?? ""}${search ?? ""}`
+
+      navigate(dest)
+    }
+  }, [url])
+
+  return
+}

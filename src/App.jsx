@@ -7,20 +7,8 @@ import '../node_modules/@ibm/plex/scss/ibm-plex.scss'
 import classNames from 'classnames'
 import { Provider } from "jotai"
 import { v4 as uuidv4 } from 'uuid'
-import {
-  Routes,
-  Route,
-  useLocation,
-  useNavigate,
-  BrowserRouter
-} from "react-router-dom"
+import { Routes, Route, BrowserRouter} from "react-router-dom"
 
-const extractUrl = (location) => {
-  return {
-    path: location?.pathname?.split("/")?.filter(d => d !== "") || [],
-    params: Object.fromEntries(new URLSearchParams(location?.search || "").entries()) || {}
-  }
-}
 
 const state = st.once(() => st.initAtom({
   tabs: [
@@ -60,7 +48,6 @@ const state = st.once(() => st.initAtom({
     }
   },
   url: null,
-  _statistics: null,
   // two underscores: dom/react ephemeral states like hovered, disabled etc
   __ephemeral: {}
 }))
@@ -198,16 +185,6 @@ const Tabs = memo(() => {
   </div>
 })
 
-
-const Stats = memo(() => {
-  useEffect(() => console.log("*** render <Stast/>"))
-  const _statistics = st.useCursor(state, data => data?._statistics)
-  return <div>
-    <div>Total number of list items: {_statistics?.nrOfItems}</div>
-    <div></div>
-  </div>
-})
-
 const StateJson = memo(() => {
   useEffect(() => console.log("*** render <StateJson/>"))
   const data = st.useCursor(state, data => data)
@@ -216,46 +193,13 @@ const StateJson = memo(() => {
   </div>
 })
 
-
-const useUrlStateSync = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const url = st.useCursor(state, data => data.url)
-  // url -> state
-  useEffect(() => {
-
-    const urlBefore = st.read(state, data=> data.url)
-    const urlAfter = extractUrl(location)
-
-    if(!_.isEqual(urlAfter, urlBefore)) {
-      st.update(state, (draft) => {
-        draft.url = urlAfter
-      })
-    }
-
-  }, [location])
-
-  // state -> url
-  useEffect(() => {
-    const urlBefore = extractUrl(location)
-    const urlAfter = st.read(state, data=> data.url)
-    if(!_.isEqual(urlAfter, urlBefore)) {
-      const pathname = urlAfter?.path?.join("/")
-      const search = new URLSearchParams(urlAfter?.params)
-      const dest = `${pathname ?? ""}${search ?? ""}`
-      navigate(dest)
-    }
-  }, [url])
-
-  return
-}
-
-
 const Root = memo(() => {
   useEffect(() => {console.log("*** render <Root/>")})
 
-  useUrlStateSync()
+  st.useUrlStateSync(state, {
+    cursorFn: data => data.url,
+    updateFn: url => st.update(state, (draft) => {draft.url = url})
+  })
 
   return <Routes>
            <Route path="*" element={
@@ -266,7 +210,6 @@ const Root = memo(() => {
                  <List/>
                  <StateJson/>
                </div>
-               <Stats/>
              </div>
            } />
          </Routes>
