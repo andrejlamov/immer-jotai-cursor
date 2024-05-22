@@ -40,6 +40,7 @@ module.exports = {
     "react/no-unknown-property": ['warn', { ignore: ['css'] }],
     "react/jsx-indent": [2,2],
     '@stylistic/indent': ['error', 2],
-    '@stylistic/semi': ['error', "never"]
+    '@stylistic/semi': ['error', "never"],
+    '@stylistic/no-tabs': 2,
   }
 }

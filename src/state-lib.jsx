@@ -3,7 +3,7 @@ import {atom, createStore, useAtomValue, useSetAtom} from "jotai"
 import {useMemo} from "react"
 import {produce} from "immer"
 import _ from "lodash"
- 
+
 export const store = createStore()
 
 const atomId2watchers = {}
@@ -35,16 +35,16 @@ export const update = (state, fn, opts) => {
     const res = produce(after, draft => {
       watchers.forEach(({predicate, fn}) => {
         if(_.isNil(predicate) || predicate(before, after)) {
-	  console.log("*** applying", fn)
-	  fn(draft)
+          console.log("*** applying", fn)
+          fn(draft)
         }
       })
-    })    
+    })
 
     return res
   })
-    
-  
+
+
 }
 
 export const useCursor = (state, getFn, refresh=[]) => {

@@ -123,10 +123,10 @@ const List = memo(() => {
     return data?.id2list?.[listId]
   })
   const items = _.chain(activeList?.id2item || {})
-        .values()
-        .sortBy('order')
-        .reverse()
-        .value()
+    .values()
+    .sortBy('order')
+    .reverse()
+    .value()
 
   return <div className={css.list}>
     {items.map((d,i) => {
@@ -143,29 +143,31 @@ const ListItem = memo(({listId, data}) => {
 
   const hovered =  st.useCursor(state, data => data.__ephemeral?.["ListItem"]?.[id]?.hovered)
 
-  return <div className={css.listItem}
-              onMouseEnter={() => st.update(state, draft => {
-                _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
-              })}
-              onMouseLeave={() => st.update(state, draft => {
-                _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
-              })}>
+  return <div
+    className={css.listItem}
+    onMouseEnter={() => st.update(state, draft => {
+      _.set(draft.__ephemeral, ["ListItem", data.id, "hovered"], true)
+    })}
+    onMouseLeave={() => st.update(state, draft => {
+      _.unset(draft.__ephemeral, ["ListItem", data.id, "hovered"])
+    })}>
 
-           {hovered && <button className={classNames(css.delete)}
-                               onClick={() => st.update(state, draft => {
-                                 _.unset(draft.id2list?.[listId]?.id2item, [id])
-                               })}>delete</button>}
-           <input className={css.titleInput}
-                  value={title}
-                  onChange={(e) => {
-                    st.update(state, draft => {
-                      _.set(draft, ["id2list", listId, "id2item",data.id,"title"], e.target.value)
-                    })
-                  }}/>
-           <textarea onChange={(e) => st.update(state, draft => {
-             _.set(draft, ["id2list", listId, "id2item",data.id,"description"], e.target.value)
-           })} value={description}/>
-         </div>
+    {hovered && <button className={classNames(css.delete)}
+      onClick={() => st.update(state, draft => {
+        _.unset(draft.id2list?.[listId]?.id2item, [id])
+      })}>delete</button>}
+    <input className={css.titleInput}
+      value={title}
+      onChange={(e) => {
+        st.update(state, draft => {
+          _.set(draft, ["id2list", listId, "id2item",data.id,"title"], e.target.value)
+        })
+      }}/>
+    <textarea onChange={(e) => st.update(state, draft => {
+      _.set(draft, ["id2list", listId, "id2item",data.id,"description"], e.target.value)
+    })}
+    value={description}/>
+  </div>
 })
 
 const Tabs = memo(() => {
@@ -180,10 +182,9 @@ const Tabs = memo(() => {
       return <div key={`tab-${i}`}
         className={classNames(css.tab, d.active ?  css.active : css.inactive)}
         onClick={() => st.update(state, data => {
-          data?.tabs?.forEach(t => {
-            t.active = false
+          data?.tabs?.forEach((t,j) => {
+            t.active = i === j
           })
-          data.tabs[i].active = true
         })}
       >{id2list?.[d?.listId]?.title}</div>
     })}
@@ -210,14 +211,14 @@ const StateJson = memo(() => {
 
 const Root = memo(() => {
   return <div>
-             <Tabs/>
-             <Controls/>
-             <div className={css.mainPane}>
-               <List/>
-               <StateJson/>
-             </div>
-             <Stats/>
-           </div>
+    <Tabs/>
+    <Controls/>
+    <div className={css.mainPane}>
+      <List/>
+      <StateJson/>
+    </div>
+    <Stats/>
+  </div>
 })
 
 export const App = memo(() => {
@@ -230,10 +231,10 @@ export const App = memo(() => {
   }, [location])
 
   return <Provider store={st.store}>
-           <BrowserRouter>
-             <Routes>
-               <Route path="*" element={<Root/>} />
-             </Routes>
-           </BrowserRouter>
-         </Provider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="*" element={<Root/>} />
+      </Routes>
+    </BrowserRouter>
+  </Provider>
 })
